@@ -1,45 +1,86 @@
 //
 //  AppDelegate.m
-//  New HF Navigator
+//  HF Navigator
 //
 //  Created by Ethan on 10/29/14.
-//  Copyright (c) 2014 Obsidian Developers. All rights reserved.
+//  Copyright (c) 2014 Ethan Thomas. All rights reserved.
 //
 
 #import "AppDelegate.h"
+#import <Parse/Parse.h>
 
 @interface AppDelegate ()
 
 @end
+
+#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
 @implementation AppDelegate
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    [Parse enableLocalDatastore];
+
+    [Parse setApplicationId:@"C9vun7KPxdDKBsVcuzwxlyRDEC83hekR9O6yeX3e"
+                  clientKey:@"OoIEedGp2uIu0yWImnlqDTNunEPLaf0O6jTe4IgR"];
+        
+    
+    if ([application respondsToSelector:@selector(registerUserNotificationSettings:)]) {
+        UIUserNotificationSettings* notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound categories:nil];
+        [application registerUserNotificationSettings:notificationSettings];
+        [application registerForRemoteNotifications];
+    } else {
+        [application registerForRemoteNotificationTypes: (UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert)];
+        PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+        PFACL *defaultACL = [PFACL ACL];
+        [defaultACL setPublicReadAccess:YES];
+        [defaultACL setPublicWriteAccess:YES];
+        [currentInstallation setACL:defaultACL];
+        [currentInstallation addUniqueObject:@"Broadcast" forKey:@"channels"];
+        [PFACL setDefaultACL:defaultACL withAccessForCurrentUser:YES];
+        [currentInstallation saveInBackground];
+    }
+    
+    [[UINavigationBar appearance] setBarTintColor:UIColorFromRGB(0x222222)];
+    NSShadow *shadow = [[NSShadow alloc] init];
+    shadow.shadowColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.0];
+    shadow.shadowOffset = CGSizeMake(0, 1);
+    [[UINavigationBar appearance] setTitleTextAttributes: [NSDictionary dictionaryWithObjectsAndKeys:
+                                                           [UIColor colorWithRed:255.0/255.0 green:255.0/255.0 blue:255.0/255.0 alpha:1.0], NSForegroundColorAttributeName,
+                                                           shadow, NSShadowAttributeName,
+                                                           [UIFont fontWithName:@"HelveticaNeue-Light" size:20.0], NSFontAttributeName, nil]];[[UINavigationBar appearance] setTintColor:[UIColor whiteColor]];
+    
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+
     return YES;
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application {
-    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-    // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)newDeviceToken
+{
+    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+    [currentInstallation setDeviceTokenFromData:newDeviceToken];
+    [currentInstallation setACL:[currentInstallation ACL]];
+    PFACL *defaultACL = [PFACL ACL];
+    [defaultACL setPublicReadAccess:YES];
+    [defaultACL setPublicWriteAccess:YES];
+    [currentInstallation setACL:defaultACL];
+    [currentInstallation addUniqueObject:@"TestiOS" forKey:@"channels"];
+    [currentInstallation addUniqueObject:@"Broadcast" forKey:@"channels"];
+    [PFACL setDefaultACL:defaultACL withAccessForCurrentUser:YES];
+    [currentInstallation saveInBackground];
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application {
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+- (void)application:(UIApplication *)application didReceiveRemoteNotifications:(NSDictionary *)userInfo {
+    [PFPush handlePush:userInfo];
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application {
-    // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+- (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
+    NSLog(@"ERROR IS %@", error);
 }
 
-- (void)applicationDidBecomeActive:(UIApplication *)application {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-}
-
-- (void)applicationWillTerminate:(UIApplication *)application {
-    // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+- (void)application:(UIApplication *)application didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
+    [application registerForRemoteNotifications];
 }
 
 @end

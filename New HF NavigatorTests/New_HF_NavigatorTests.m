@@ -1,9 +1,9 @@
 //
 //  New_HF_NavigatorTests.m
-//  New HF NavigatorTests
+//  HF NavigatorTests
 //
 //  Created by Ethan on 10/29/14.
-//  Copyright (c) 2014 Obsidian Developers. All rights reserved.
+//  Copyright (c) 2014 Ethan Thomas. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>

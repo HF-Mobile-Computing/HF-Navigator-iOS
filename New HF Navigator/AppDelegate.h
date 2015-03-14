@@ -1,9 +1,9 @@
 //
 //  AppDelegate.h
-//  New HF Navigator
+//  HF Navigator
 //
 //  Created by Ethan on 10/29/14.
-//  Copyright (c) 2014 Obsidian Developers. All rights reserved.
+//  Copyright (c) 2014 Ethan Thomas. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
